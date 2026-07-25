@@ -1,3 +1,4 @@
+// Package controllers menangani HTTP request, me-embed BaseController, dan mendelegasikan logika ke service layer.
 package controllers
 
 import (

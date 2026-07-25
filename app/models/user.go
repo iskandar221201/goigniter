@@ -1,3 +1,4 @@
+// Package models mendefinisikan struktur tabel database via GORM beserta method query-nya.
 package models
 
 import (

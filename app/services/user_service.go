@@ -1,3 +1,4 @@
+// Package services berisi business logic aplikasi, dipisahkan dari controller dan model.
 package services
 
 import (

@@ -1,3 +1,4 @@
+// Entry point aplikasi. Load config, inisialisasi database, jalanin migration, setup Fiber, register routes, start server.
 package main
 
 import (

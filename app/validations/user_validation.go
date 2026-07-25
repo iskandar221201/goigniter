@@ -1,3 +1,4 @@
+// Package validations mendefinisikan struct input request dengan tag validate dari go-playground/validator.
 package validations
 
 type CreateUserInput struct {

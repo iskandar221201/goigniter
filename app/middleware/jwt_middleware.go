@@ -1,3 +1,4 @@
+// Package middleware berisi Fiber middleware untuk autentikasi JWT dan role-based access control.
 package middleware
 
 import (

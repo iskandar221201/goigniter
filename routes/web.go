@@ -1,3 +1,4 @@
+// Package routes mendefinisikan semua endpoint API di satu tempat, mirip routing CI4.
 package routes
 
 import (
