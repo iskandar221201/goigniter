@@ -41,8 +41,8 @@ func (s *AuthService) Register(input validations.RegisterInput) (*models.User, e
 }
 
 func (s *AuthService) Login(input validations.LoginInput) (string, error) {
-	var user models.User
-	if err := s.db.Where("email = ?", input.Email).First(&user).Error; err != nil {
+	user, err := new(models.User).FindByEmail(s.db, input.Email)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", errors.New("invalid credentials")
 		}

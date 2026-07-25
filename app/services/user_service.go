@@ -17,8 +17,7 @@ func NewUserService(db *gorm.DB) *UserService {
 }
 
 func (s *UserService) GetAll() ([]models.User, error) {
-	var users []models.User
-	err := s.db.Find(&users).Error
+	users, err := new(models.User).FindAll(s.db)
 	if err != nil {
 		return nil, err
 	}
@@ -26,12 +25,11 @@ func (s *UserService) GetAll() ([]models.User, error) {
 }
 
 func (s *UserService) GetByID(id uint) (*models.User, error) {
-	var user models.User
-	err := s.db.First(&user, id).Error
+	user, err := new(models.User).FindByID(s.db, id)
 	if err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return user, nil
 }
 
 func (s *UserService) Create(input validations.CreateUserInput) (*models.User, error) {
@@ -58,8 +56,8 @@ func (s *UserService) Create(input validations.CreateUserInput) (*models.User, e
 }
 
 func (s *UserService) Update(id uint, input validations.UpdateUserInput) (*models.User, error) {
-	var user models.User
-	if err := s.db.First(&user, id).Error; err != nil {
+	user, err := new(models.User).FindByID(s.db, id)
+	if err != nil {
 		return nil, err
 	}
 
@@ -70,18 +68,18 @@ func (s *UserService) Update(id uint, input validations.UpdateUserInput) (*model
 		user.Role = input.Role
 	}
 
-	if err := s.db.Save(&user).Error; err != nil {
+	if err := s.db.Save(user).Error; err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (s *UserService) Delete(id uint) error {
-	var user models.User
-	if err := s.db.First(&user, id).Error; err != nil {
+	user, err := new(models.User).FindByID(s.db, id)
+	if err != nil {
 		return err
 	}
 
-	return s.db.Delete(&user).Error
+	return s.db.Delete(user).Error
 }
