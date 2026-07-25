@@ -1,0 +1,10 @@
+/agents
+
+.env
+
+storage/
+
+tmp/
+
+goigniter
+goigniter.exe
