@@ -1,3 +1,4 @@
+// Package system berisi komponen inti: database connection, base controller, standard response, dan JWT helper.
 package system
 
 import (

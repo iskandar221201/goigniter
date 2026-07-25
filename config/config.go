@@ -1,3 +1,4 @@
+// Package config bertanggung jawab untuk membaca file .env dan memetakannya ke typed struct Config.
 package config
 
 import (

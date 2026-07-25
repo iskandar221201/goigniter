@@ -1,3 +1,4 @@
+// Package helpers berisi fungsi-fungsi utility murni tanpa ketergantungan ke layer lain.
 package helpers
 
 import (

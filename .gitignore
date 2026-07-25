@@ -3,6 +3,7 @@
 .env
 
 storage/
+storage/logs/
 
 tmp/
 
