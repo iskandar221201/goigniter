@@ -31,7 +31,7 @@ func main() {
 		},
 	})
 
-	routes.Register(app)
+	routes.Register(app, cfg)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", cfg.App.Port)))
 }
