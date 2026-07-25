@@ -6,10 +6,10 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string `json:"name" gorm:"not null"`
-	Email    string `json:"email" gorm:"uniqueIndex;not null"`
+	Name     string `json:"name" gorm:"type:varchar(255);not null"`
+	Email    string `json:"email" gorm:"type:varchar(255);uniqueIndex;not null"`
 	Password string `json:"-"`
-	Role     string `json:"role" gorm:"default:user"`
+	Role     string `json:"role" gorm:"type:varchar(50);default:user"`
 }
 
 func (u *User) FindByEmail(db *gorm.DB, email string) (*User, error) {
