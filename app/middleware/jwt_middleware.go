@@ -1,42 +1,50 @@
-// Package middleware berisi Fiber middleware untuk autentikasi JWT dan role-based access control.
 package middleware
 
 import (
+	"context"
+	"net/http"
 	"slices"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/iskandar221201/goigniter/system"
 )
 
-func JWTProtected(secret string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		auth := c.Get("Authorization")
-		if len(auth) < 7 || auth[:7] != "Bearer " {
-			return system.Error(c, fiber.StatusUnauthorized, "Unauthorized")
-		}
+func JWTProtected(secret string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			auth := r.Header.Get("Authorization")
+			if len(auth) < 7 || auth[:7] != "Bearer " {
+				system.Error(w, http.StatusUnauthorized, "Unauthorized")
+				return
+			}
 
-		token := auth[7:]
-		claims, err := system.ParseToken(token, secret)
-		if err != nil {
-			return system.Error(c, fiber.StatusUnauthorized, "Unauthorized")
-		}
+			token := auth[7:]
+			claims, err := system.ParseToken(token, secret)
+			if err != nil {
+				system.Error(w, http.StatusUnauthorized, "Unauthorized")
+				return
+			}
 
-		c.Locals("user", claims)
-		return c.Next()
+			ctx := context.WithValue(r.Context(), "user", claims)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
 }
 
-func RoleGuard(roles ...string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		claims, ok := c.Locals("user").(*system.JWTClaims)
-		if !ok {
-			return system.Error(c, fiber.StatusUnauthorized, "Unauthorized")
-		}
+func RoleGuard(roles ...string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := r.Context().Value("user").(*system.JWTClaims)
+			if !ok {
+				system.Error(w, http.StatusUnauthorized, "Unauthorized")
+				return
+			}
 
-		if slices.Contains(roles, claims.Role) {
-			return c.Next()
-		}
+			if slices.Contains(roles, claims.Role) {
+				next.ServeHTTP(w, r)
+				return
+			}
 
-		return system.Error(c, fiber.StatusForbidden, "Forbidden")
+			system.Error(w, http.StatusForbidden, "Forbidden")
+		})
 	}
 }

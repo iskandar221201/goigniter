@@ -1,41 +1,43 @@
 package system
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
 )
 
 type BaseController struct{}
 
-func (bc *BaseController) Respond(c *fiber.Ctx, status int, message string, data interface{}) error {
-	return Success(c, status, message, data)
+func (bc *BaseController) Respond(w http.ResponseWriter, status int, message string, data interface{}) error {
+	return Success(w, status, message, data)
 }
 
-func (bc *BaseController) RespondError(c *fiber.Ctx, status int, message string) error {
-	return Error(c, status, message)
+func (bc *BaseController) RespondError(w http.ResponseWriter, status int, message string) error {
+	return Error(w, status, message)
 }
 
-func (bc *BaseController) RespondValidation(c *fiber.Ctx, errors interface{}) error {
-	return ValidationError(c, errors)
+func (bc *BaseController) RespondValidation(w http.ResponseWriter, errors interface{}) error {
+	return ValidationError(w, errors)
 }
 
-func (bc *BaseController) BodyParse(c *fiber.Ctx, out interface{}) error {
-	if err := c.BodyParser(out); err != nil {
-		return Error(c, fiber.StatusBadRequest, "Invalid request body")
+func (bc *BaseController) BodyParse(w http.ResponseWriter, r *http.Request, out interface{}) error {
+	if err := json.NewDecoder(r.Body).Decode(out); err != nil {
+		return Error(w, http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := validator.New().Struct(out); err != nil {
 		errs := ParseValidationErrors(err)
-		return ValidationError(c, errs)
+		return ValidationError(w, errs)
 	}
 
 	return nil
 }
 
-func (bc *BaseController) CurrentUser(c *fiber.Ctx) *JWTClaims {
-	user, ok := c.Locals("user").(*JWTClaims)
+func (bc *BaseController) CurrentUser(r *http.Request) *JWTClaims {
+	claims, ok := r.Context().Value("user").(*JWTClaims)
 	if !ok {
 		return nil
 	}
-	return user
+	return claims
 }

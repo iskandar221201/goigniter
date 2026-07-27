@@ -1,11 +1,12 @@
 package system
 
 import (
+	"encoding/json"
 	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
 )
 
 type APIResponse struct {
@@ -15,23 +16,29 @@ type APIResponse struct {
 	Errors  interface{} `json:"errors,omitempty"`
 }
 
-func Success(c *fiber.Ctx, status int, message string, data interface{}) error {
-	return c.Status(status).JSON(APIResponse{
+func Success(w http.ResponseWriter, status int, message string, data interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(APIResponse{
 		Status:  true,
 		Message: message,
 		Data:    data,
 	})
 }
 
-func Error(c *fiber.Ctx, status int, message string) error {
-	return c.Status(status).JSON(APIResponse{
+func Error(w http.ResponseWriter, status int, message string) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(APIResponse{
 		Status:  false,
 		Message: message,
 	})
 }
 
-func ValidationError(c *fiber.Ctx, errors interface{}) error {
-	return c.Status(fiber.StatusUnprocessableEntity).JSON(APIResponse{
+func ValidationError(w http.ResponseWriter, errors interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	return json.NewEncoder(w).Encode(APIResponse{
 		Status:  false,
 		Message: "Validation failed",
 		Errors:  errors,
@@ -68,5 +75,14 @@ func validationMessage(fe validator.FieldError) string {
 		return "must be less than or equal to " + fe.Param()
 	default:
 		return "invalid value"
+	}
+}
+
+// thin adapter — all handlers return error, Wrap catches unhandled ones as 500
+func Wrap(fn func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := fn(w, r); err != nil {
+			Error(w, http.StatusInternalServerError, err.Error())
+		}
 	}
 }

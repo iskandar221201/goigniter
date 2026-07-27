@@ -1,11 +1,11 @@
-// Entry point aplikasi. Load config, inisialisasi database, jalanin migration, setup Fiber, register routes, start server.
 package main
 
 import (
 	"fmt"
 	"log"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -41,18 +41,9 @@ func main() {
 		log.Fatalf("Failed to run migration: %v", err)
 	}
 
-	app := fiber.New(fiber.Config{
-		Prefork: false,
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			code := fiber.StatusInternalServerError
-			if e, ok := err.(*fiber.Error); ok {
-				code = e.Code
-			}
-			return system.Error(c, code, err.Error())
-		},
-	})
+	r := chi.NewRouter()
 
-	routes.Register(app, cfg)
+	routes.Register(r, cfg)
 
-	log.Fatal(app.Listen(fmt.Sprintf(":%d", cfg.App.Port)))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.App.Port), r))
 }

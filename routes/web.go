@@ -1,8 +1,7 @@
-// Package routes mendefinisikan semua endpoint API di satu tempat, mirip routing CI4.
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/iskandar221201/goigniter/app/controllers"
 	"github.com/iskandar221201/goigniter/app/middleware"
 	"github.com/iskandar221201/goigniter/app/services"
@@ -10,22 +9,25 @@ import (
 	"github.com/iskandar221201/goigniter/system"
 )
 
-func Register(app *fiber.App, cfg *config.Config) {
+func Register(r chi.Router, cfg *config.Config) {
 	authService := services.NewAuthService(system.GetDB(), cfg)
 	authController := controllers.NewAuthController(authService)
 
 	userService := services.NewUserService(system.GetDB())
 	userController := controllers.NewUserController(userService)
 
-	api := app.Group("/api/v1")
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Post("/auth/register", system.Wrap(authController.Register))
+		r.Post("/auth/login", system.Wrap(authController.Login))
 
-	api.Post("/auth/register", authController.Register)
-	api.Post("/auth/login", authController.Login)
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.JWTProtected(cfg.JWT.Secret))
 
-	protected := api.Group("/", middleware.JWTProtected(cfg.JWT.Secret))
-	protected.Get("/users", userController.Index)
-	protected.Post("/users", userController.Create)
-	protected.Get("/users/:id", userController.Show)
-	protected.Put("/users/:id", userController.Update)
-	protected.Delete("/users/:id", userController.Delete)
+			r.Get("/users", system.Wrap(userController.Index))
+			r.Post("/users", system.Wrap(userController.Create))
+			r.Get("/users/{id}", system.Wrap(userController.Show))
+			r.Put("/users/{id}", system.Wrap(userController.Update))
+			r.Delete("/users/{id}", system.Wrap(userController.Delete))
+		})
+	})
 }

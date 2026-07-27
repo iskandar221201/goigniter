@@ -3,7 +3,7 @@
 ![Go Version](https://img.shields.io/badge/Go-1.24-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**CI4-flavored Go starter kit** — Fiber + GORM + JWT.
+**CI4-flavored Go starter kit** — Chi + GORM + JWT.
 
 GoIgniter is a Go starter kit / boilerplate that feels familiar to developers coming from the CodeIgniter 4 ecosystem. It's not a new framework — it's glue code that connects the best Go libraries with a CI4-inspired structure.
 
@@ -39,7 +39,7 @@ goigniter/
 │   ├── services/       # Business logic layer
 │   ├── validations/    # Request validation structs
 │   ├── helpers/        # Pure utility functions
-│   └── middleware/     # Fiber middleware (JWT auth, RBAC)
+│   └── middleware/     # Chi/net/http middleware (JWT auth, RBAC)
 ├── config/             # Typed config (load dari .env)
 ├── database/
 │   └── migrations/     # SQL migration files (golang-migrate)
@@ -124,7 +124,7 @@ Error:
 
 | Layer | Library |
 |-------|---------|
-| HTTP Framework | [Fiber v2](https://github.com/gofiber/fiber) |
+| HTTP Framework | [Chi v5](https://github.com/go-chi/chi) |
 | ORM | [GORM](https://gorm.io) |
 | Database Driver | [MySQL](https://github.com/go-sql-driver/mysql) |
 | Validation | [go-playground/validator](https://github.com/go-playground/validator) |

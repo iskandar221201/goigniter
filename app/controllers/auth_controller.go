@@ -1,8 +1,8 @@
-// Package controllers menangani HTTP request, me-embed BaseController, dan mendelegasikan logika ke service layer.
 package controllers
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"net/http"
+
 	"github.com/iskandar221201/goigniter/app/services"
 	"github.com/iskandar221201/goigniter/app/validations"
 	"github.com/iskandar221201/goigniter/system"
@@ -17,30 +17,30 @@ func NewAuthController(authService *services.AuthService) *AuthController {
 	return &AuthController{authService: authService}
 }
 
-func (ac *AuthController) Register(c *fiber.Ctx) error {
+func (ac *AuthController) Register(w http.ResponseWriter, r *http.Request) error {
 	var input validations.RegisterInput
-	if err := ac.BodyParse(c, &input); err != nil {
+	if err := ac.BodyParse(w, r, &input); err != nil {
 		return err
 	}
 
 	user, err := ac.authService.Register(input)
 	if err != nil {
-		return ac.RespondError(c, fiber.StatusUnprocessableEntity, err.Error())
+		return ac.RespondError(w, http.StatusUnprocessableEntity, err.Error())
 	}
 
-	return ac.Respond(c, fiber.StatusCreated, "Registered", user)
+	return ac.Respond(w, http.StatusCreated, "Registered", user)
 }
 
-func (ac *AuthController) Login(c *fiber.Ctx) error {
+func (ac *AuthController) Login(w http.ResponseWriter, r *http.Request) error {
 	var input validations.LoginInput
-	if err := ac.BodyParse(c, &input); err != nil {
+	if err := ac.BodyParse(w, r, &input); err != nil {
 		return err
 	}
 
 	token, err := ac.authService.Login(input)
 	if err != nil {
-		return ac.RespondError(c, fiber.StatusUnauthorized, err.Error())
+		return ac.RespondError(w, http.StatusUnauthorized, err.Error())
 	}
 
-	return ac.Respond(c, fiber.StatusOK, "OK", fiber.Map{"token": token})
+	return ac.Respond(w, http.StatusOK, "OK", map[string]string{"token": token})
 }
